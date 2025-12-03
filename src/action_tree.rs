@@ -147,7 +147,6 @@ pub struct ActionTree {
 }
 
 #[derive(Default)]
-#[cfg_attr(feature = "bincode", derive(Decode, Encode))]
 pub(crate) struct ActionTreeNode {
     pub(crate) player: u8,
     pub(crate) board_state: BoardState,
@@ -390,10 +389,10 @@ impl ActionTree {
             let mut node = &*self.root.lock() as *const ActionTreeNode;
             for action in &self.history {
                 while (*node).is_chance() {
-                    node = &*(*node).children[0].lock();
+                    node = &*(&(*node).children)[0].lock();
                 }
                 let index = (*node).actions.iter().position(|x| x == action).unwrap();
-                node = &*(*node).children[index].lock();
+                node = &*(&(*node).children)[index].lock();
             }
             &*node
         }
@@ -405,7 +404,7 @@ impl ActionTree {
         unsafe {
             let mut node = self.current_node() as *const ActionTreeNode;
             while (*node).is_chance() {
-                node = &*(*node).children[0].lock();
+                node = &*(&(*node).children)[0].lock();
             }
             &*node
         }
@@ -1093,3 +1092,4 @@ fn merge_bet_actions(actions: Vec<Action>, pot: i32, offset: i32, param: f64) ->
     ret.reverse();
     ret
 }
+
